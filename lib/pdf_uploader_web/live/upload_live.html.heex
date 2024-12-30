@@ -1,0 +1,435 @@
+<div class="upload-container">
+  <div class="upload-layout">
+    <div class="upload-section">
+      <form id="upload-form" phx-submit="save" phx-change="validate">
+        <div class="drop-zone" phx-drop-target={@uploads.pdf_files.ref}>
+          <div class="drop-zone-content">
+            <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24">
+              <path fill="currentColor"
+                d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5c0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5l5 5h-3z" />
+            </svg>
+            <p class="drop-text">Arraste seus arquivos PDF aqui ou</p>
+
+            <div class="file-input-wrapper" id="upload-container" phx-hook="UploadHandler">
+              <.live_file_input upload={@uploads.pdf_files} class="file-input" />
+
+              <div class="button-group">
+                <button type="button" class="browse-button" phx-click="switch-mode" data-mode="file">
+                  Selecionar Arquivos
+                </button>
+                <button type="button" class="browse-button" phx-click="switch-mode" data-mode="folder">
+                  Selecionar Pasta
+                </button>
+              </div>
+            </div>
+
+            <p class="file-hint">Aceita apenas arquivos PDF (máximo 100 arquivos)</p>
+          </div>
+        </div>
+
+        <div class="submit-section">
+          <button type="submit" class="submit-button" disabled={Enum.empty?(@uploads.pdf_files.entries) ||
+            Enum.any?(@uploads.pdf_files.errors)}>
+            Upload
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div class="uploaded-files-section">
+      <div class="uploaded-files-header">
+        <h3>Arquivos</h3>
+        <button type="button" class="clear-button" phx-click="clear-uploads" disabled={Enum.empty?(@uploaded_files) &&
+          Enum.empty?(@uploads.pdf_files.errors)}>
+          Limpar Lista
+        </button>
+      </div>
+
+      <div class="uploaded-files-content">
+        <%= if Enum.empty?(@uploaded_files) and Enum.empty?(@uploads.pdf_files.entries) do %>
+          <div class="empty-state">
+            <svg class="empty-icon" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24">
+              <path fill="currentColor"
+                d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z" />
+            </svg>
+            <p>Nenhum arquivo selecionado</p>
+            <span class="empty-hint">Os arquivos selecionados aparecerão aqui</span>
+          </div>
+          <% else %>
+            <!-- Arquivos em upload -->
+            <article :for={entry <- @uploads.pdf_files.entries} class="upload-entry">
+              <div class="entry-details">
+                <div class="file-info">
+                  <svg class="pdf-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                    <path fill="currentColor"
+                      d="M8 16h8v2H8zm0-4h8v2H8zm6-10H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z" />
+                  </svg>
+                  <span class="filename">{entry.client_name}</span>
+                </div>
+
+                <div class="progress-section">
+                  <div class="progress-wrapper">
+                    <progress value={entry.progress} max="100"> {entry.progress}% </progress>
+                    <span class="progress-text">{entry.progress}%</span>
+                  </div>
+                  <button type="button" class="cancel-button" phx-click="cancel-upload" phx-value-ref={entry.ref}
+                    aria-label="cancel">&times;</button>
+                </div>
+              </div>
+            </article>
+
+            <!-- Arquivos enviados -->
+            <article :for={file <- @uploaded_files} class="upload-entry completed">
+              <div class="entry-details">
+                <div class="file-info">
+                  <svg class="pdf-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                    <path fill="currentColor"
+                      d="M8 16h8v2H8zm0-4h8v2H8zm6-10H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z" />
+                  </svg>
+                  <span class="filename">{file.name}</span>
+                </div>
+
+                <div class="file-status">
+                  <span class="status-badge">
+                    <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                      viewBox="0 0 24 24">
+                      <path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                    </svg>
+                    Enviado
+                  </span>
+                  <span class="upload-time">
+                    {Calendar.strftime(file.timestamp, "%d/%m/%Y %H:%M")}
+                  </span>
+                </div>
+              </div>
+            </article>
+            <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .upload-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 1rem;
+  }
+
+  .upload-layout {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+  }
+
+  .upload-section {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .drop-zone {
+    border: 2px dashed #e2e8f0;
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    background-color: white;
+    transition: border-color 0.3s ease;
+  }
+
+  .drop-zone.dragover {
+    border-color: #3b82f6;
+    background-color: #f8fafc;
+  }
+
+  .drop-zone-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .upload-icon {
+    color: #94a3b8;
+  }
+
+  .drop-text {
+    margin: 0;
+    color: #64748b;
+  }
+
+  .file-input-wrapper {
+    position: relative;
+  }
+
+  .file-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+  }
+
+  .browse-button {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background-color: #3b82f6;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  .browse-button:hover {
+    background-color: #2563eb;
+  }
+
+  .file-hint {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #94a3b8;
+  }
+
+  .uploaded-files-section {
+    flex: 1;
+    min-width: 0;
+    background-color: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+  }
+
+  .uploaded-files-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .uploaded-files-header h3 {
+    margin: 0;
+    color: #1e293b;
+  }
+
+  .clear-button {
+    padding: 0.5rem 1rem;
+    background-color: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: background-color 0.3s ease;
+  }
+
+  .clear-button:hover {
+    background-color: #dc2626;
+  }
+
+  .clear-button:disabled {
+    background-color: #fca5a5;
+    cursor: not-allowed;
+  }
+
+  .uploaded-files-content {
+    min-height: 300px;
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+    color: #94a3b8;
+    text-align: center;
+  }
+
+  .empty-icon {
+    color: #cbd5e0;
+    margin-bottom: 1rem;
+  }
+
+  .empty-state p {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #64748b;
+  }
+
+  .empty-hint {
+    font-size: 0.875rem;
+    color: #94a3b8;
+    margin-top: 0.5rem;
+  }
+
+  .upload-entry {
+    border-bottom: 1px solid #e2e8f0;
+    padding: 1rem 0;
+  }
+
+  .upload-entry:last-child {
+    border-bottom: none;
+  }
+
+  .entry-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .file-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+
+  .pdf-icon {
+    color: #ef4444;
+    flex-shrink: 0;
+  }
+
+  .filename {
+    font-size: 0.875rem;
+    color: #1e293b;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .progress-section {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+  }
+
+  .progress-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+  }
+
+  progress {
+    flex: 1;
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  progress::-webkit-progress-bar {
+    background-color: #e2e8f0;
+  }
+
+  progress::-webkit-progress-value {
+    background-color: #3b82f6;
+  }
+
+  .progress-text {
+    font-size: 0.875rem;
+    color: #64748b;
+    min-width: 3rem;
+    text-align: right;
+  }
+
+  .cancel-button {
+    background: none;
+    border: none;
+    color: #ef4444;
+    cursor: pointer;
+    font-size: 1.25rem;
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.3s ease;
+  }
+
+  .cancel-button:hover {
+    color: #dc2626;
+  }
+
+  .file-status {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .status-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    background-color: #22c55e;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+  }
+
+  .check-icon {
+    width: 12px;
+    height: 12px;
+  }
+
+  .upload-time {
+    font-size: 0.75rem;
+    color: #64748b;
+  }
+
+  .submit-section {
+    margin-top: 1rem;
+    text-align: right;
+  }
+
+  .submit-button {
+    padding: 0.5rem 1rem;
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  .submit-button:hover {
+    background-color: #2563eb;
+  }
+
+  .submit-button:disabled {
+    background-color: #93c5fd;
+    cursor: not-allowed;
+  }
+
+  .button-group {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .button-group .browse-button {
+    font-size: 0.875rem;
+  }
+
+  /* Ajuste o hover para ambos os botões */
+  .button-group .browse-button:hover {
+    background-color: #2563eb;
+  }
+
+  @media (max-width: 768px) {
+    .upload-layout {
+      flex-direction: column;
+    }
+
+    .upload-section,
+    .uploaded-files-section {
+      width: 100%;
+    }
+  }
+
+  .file-input {
+    display: none;
+  }
+</style>
