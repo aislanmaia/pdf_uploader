@@ -302,3 +302,8 @@ progress::-webkit-progress-value {
         transform: translateX(100%);
     }
 }
+
+.dragover {
+    border-color: #4299e1;
+    background-color: rgba(66, 153, 225, 0.1);
+  }

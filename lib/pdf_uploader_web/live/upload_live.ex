@@ -8,11 +8,12 @@ defmodule PdfUploaderWeb.UploadLive do
      socket
      |> assign(:uploaded_files, [])
      |> assign(:folder_mode, false)
+     |> assign(:show_files_panel, false)
      |> allow_upload(:pdf_files, accept: ~w(.pdf), max_entries: 100, max_file_size: 10_000_000)}
   end
 
   def handle_event("switch-mode", _params, socket) do
-    # Envia o evento de volta para o hook
+    # Send event back to the hook
     {:noreply, push_event(socket, "switch-mode", %{})}
   end
 
@@ -33,22 +34,22 @@ defmodule PdfUploaderWeb.UploadLive do
   def handle_event("save", _params, socket) do
     uploaded_files =
       consume_uploaded_entries(socket, :pdf_files, fn %{path: path}, entry ->
-        # Define o caminho relativo baseado no modo de seleção
+        # Define relative path based on selection mode
         relative_path =
           if entry.client_relative_path == "" do
-            # Para arquivos individuais, usa apenas o nome do arquivo
+            # For individual files, use only the filename
             entry.client_name
           else
-            # Para pastas, mantém a estrutura de diretórios
+            # For folders, maintain directory structure
             entry.client_relative_path
           end
 
-        # Cria os diretórios necessários
+        # Create necessary directories
         dest_path = Path.join(@upload_dir, relative_path)
         dest_dir = Path.dirname(dest_path)
         File.mkdir_p!(dest_dir)
 
-        # Move o arquivo para o diretório de destino
+        # Move file to destination directory
         File.cp!(path, dest_path)
 
         uploaded_file = %{
@@ -65,29 +66,33 @@ defmodule PdfUploaderWeb.UploadLive do
     socket =
       socket
       |> update(:uploaded_files, &(&1 ++ uploaded_files))
-      |> put_flash(:info, "Arquivos enviados com sucesso!")
+      |> put_flash(:info, "Files uploaded successfully!")
 
     {:noreply, socket}
   end
 
   def handle_event("clear-uploads", _params, socket) do
-    # Cancela todos os uploads pendentes
+    # Cancel all pending uploads
     socket =
       Enum.reduce(socket.assigns.uploads.pdf_files.entries, socket, fn entry, acc ->
         cancel_upload(acc, :pdf_files, entry.ref)
       end)
 
-    # Limpa a lista de arquivos enviados e reinicializa o upload
-  socket =
-    socket
-    |> assign(:uploaded_files, [])
-    |> allow_upload(:pdf_files,
-      accept: ~w(.pdf),
-      max_entries: 100,
-      max_file_size: 10_000_000
-    )
+    # Clear uploaded files list and reinitialize upload
+    socket =
+      socket
+      |> assign(:uploaded_files, [])
+      |> allow_upload(:pdf_files,
+        accept: ~w(.pdf),
+        max_entries: 100,
+        max_file_size: 10_000_000
+      )
 
     {:noreply, socket |> clear_flash()}
+  end
+
+  def handle_event("toggle-files-panel", _, socket) do
+    {:noreply, assign(socket, show_files_panel: !socket.assigns.show_files_panel)}
   end
 
   def handle_info(:clear_flash, socket) do
@@ -98,9 +103,7 @@ defmodule PdfUploaderWeb.UploadLive do
     {:noreply, socket}
   end
 
-  defp error_to_string(:too_large), do: "Arquivo muito grande. O tamanho máximo é 10MB"
-  defp error_to_string(:too_many_files), do: "Você pode enviar no máximo 5 arquivos por vez"
-
-  defp error_to_string(:not_accepted),
-    do: "Tipo de arquivo não permitido. Apenas PDFs são aceitos"
+  defp error_to_string(:too_large), do: "File too large. Maximum size is 10MB"
+  defp error_to_string(:too_many_files), do: "You can upload a maximum of 5 files at a time"
+  defp error_to_string(:not_accepted), do: "File type not allowed. Only PDFs are accepted"
 end

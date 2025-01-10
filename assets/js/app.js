@@ -55,10 +55,26 @@ let liveSocket = new LiveSocket("/live", Socket, {
 
     UploadHandler: {
       mounted() {
+        // Browsers have a default behavior for dragged files:
+        // trying to open the file in the browser or download it.
+        // This default behavior prevents our own drop handlers from working.
+        // Therefore, we need to first "disable" this default behavior
+        // by adding listeners at the document level.
+        document.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }, false);
+
+        document.addEventListener('drop', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }, false);
+
+        // Handler to toggle between file and folder selection
         this.handleEvent("switch-mode", () => {
           const input = this.el.querySelector('input[type="file"]');
           const activeButton = this.el.querySelector('button:focus');
-          console.log("activeButton", activeButton)
+
           if (activeButton) {
             const mode = activeButton.dataset.mode;
             if (mode === 'folder') {
@@ -68,11 +84,140 @@ let liveSocket = new LiveSocket("/live", Socket, {
               input.removeAttribute('webkitdirectory');
               input.removeAttribute('directory');
             }
+
             setTimeout(() => input.click(), 100);
           }
         });
+
+        // Setting up specific handlers for our drop zone
+        const dropZone = this.el;
+
+        // Adds visual feedback when the file enters the drop area
+        dropZone.addEventListener('dragenter', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropZone.classList.add('dragover');
+        }, false);
+
+        // Maintains visual feedback while the file is over the area
+        dropZone.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          e.dataTransfer.dropEffect = 'copy';
+          dropZone.classList.add('dragover');
+        }, false);
+
+        // Removes visual feedback when the file leaves the area
+        dropZone.addEventListener('dragleave', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropZone.classList.remove('dragover');
+        }, false);
+
+        // Main handler for when files are dropped in the area
+        dropZone.addEventListener('drop', async (e) => {
+          console.log("Drop event triggered");
+          e.preventDefault();
+          e.stopPropagation();
+          dropZone.classList.remove('dragover');
+
+          const items = [...e.dataTransfer.items];
+          console.log("Dropped items:", items);
+          const files = [];
+
+          // Process each item dropped in the area
+          for (const item of items) {
+            if (item.kind === 'file') {
+              const entry = item.webkitGetAsEntry() || item.getAsEntry();
+              if (entry) {
+                if (entry.isDirectory) {
+                  // If it's a directory, process recursively
+                  await this.processDirectory(entry, files);
+                } else if (entry.isFile) {
+                  // If it's a file, check if it's PDF and add it
+                  const file = await this.getFileFromEntry(entry);
+                  if (file.name.toLowerCase().endsWith('.pdf')) {
+                    file.relativePath = '';
+                    files.push(file);
+                  }
+                }
+              }
+            }
+          }
+
+          // If PDF files were found, prepare for upload
+          if (files.length > 0) {
+            const input = this.el.querySelector('input[type="file"]');
+            const dt = new DataTransfer();
+            files.forEach(file => {
+              // Create a new File with the necessary properties
+              const newFile = new File([file], file.name, {
+                type: file.type,
+                lastModified: file.lastModified
+              });
+              // Add the relative path that will be used by the server
+              Object.defineProperty(newFile, 'webkitRelativePath', {
+                value: file.relativePath + file.name,
+                writable: false
+              });
+              dt.items.add(newFile);
+            });
+            // Update the input's files and trigger the change event
+            input.files = dt.files;
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        }, false);
+      },
+
+      // Recursive function to process directories
+      async processDirectory(dirEntry, files, path = '') {
+        const entries = await this.readEntriesPromise(dirEntry);
+
+        for (const entry of entries) {
+          if (entry.isDirectory) {
+            // If it's a directory, process recursively maintaining the path
+            await this.processDirectory(entry, files, `${path}${entry.name}/`);
+          } else if (entry.isFile) {
+            const file = await this.getFileFromEntry(entry);
+            if (file.name.toLowerCase().endsWith('.pdf')) {
+              // Store the relative path to maintain the structure
+              file.relativePath = path;
+              files.push(file);
+            }
+          }
+        }
+      },
+
+      // Converts the FileSystem callback API to Promises
+      // This allows us to use async/await and have cleaner, more readable code
+      // Instead of nested callbacks, we can write linear code
+      readEntriesPromise(dirEntry) {
+        return new Promise((resolve, reject) => {
+          const reader = dirEntry.createReader();
+          reader.readEntries(resolve, reject);
+        });
+      },
+
+      // Similar to readEntriesPromise, converts the file API
+      // from callbacks to Promises, allowing the use of async/await
+      // and better error handling with try/catch
+      getFileFromEntry(fileEntry) {
+        return new Promise((resolve, reject) => {
+          fileEntry.file(resolve, reject);
+        });
+      }
+    },
+
+    SlidingPanel: {
+      mounted() {
+        this.el.addEventListener('transitionend', () => {
+          if (!this.el.classList.contains('translate-x-0')) {
+            this.el.classList.add('hidden')
+          }
+        })
       }
     }
+
   }
 })
 
