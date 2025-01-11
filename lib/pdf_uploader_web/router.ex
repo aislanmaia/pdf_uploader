@@ -19,7 +19,9 @@ defmodule PdfUploaderWeb.Router do
 
     get "/", PageController, :home
 
-    live "/upload", UploadLive
+    live_session :default, on_mount: {PdfUploaderWeb.InitAssigns, :default} do
+      live "/upload", UploadLive
+    end
   end
 
   # Other scopes may use custom stacks.
