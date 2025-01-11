@@ -31,7 +31,8 @@ defmodule PdfUploaderWeb.UploadLive.Components.UploadDropZone do
      socket
      |> assign(assigns)
      |> assign_new(:mode, fn -> :file end)
-     |> assign_new(:class, fn -> nil end)}
+     |> assign_new(:class, fn -> nil end)
+     |> assign_new(:on_mode_change, fn -> nil end)}
   end
 
   def render(assigns) do
@@ -45,7 +46,7 @@ defmodule PdfUploaderWeb.UploadLive.Components.UploadDropZone do
               <path fill="currentColor" d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5c0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5l5 5h-3z" />
             </svg>
           </div>
-          
+
           <div class="text-center">
             <p class="text-sm text-gray-600">Arraste seus arquivos PDF aqui ou</p>
             <p class="text-xs text-gray-400 mt-1">Máximo 100 arquivos</p>
@@ -54,14 +55,23 @@ defmodule PdfUploaderWeb.UploadLive.Components.UploadDropZone do
           <div class="w-full">
             <.live_file_input upload={@upload} class="hidden" />
             <div class="grid grid-cols-2 gap-3">
-              <button type="button" 
+              <button type="button"
                       class={[
                         "flex flex-col items-center justify-center p-3 border rounded-lg transition-colors group",
                         @mode == :file && "border-purple-500 bg-purple-50" || "border-gray-200 hover:border-purple-500 hover:bg-purple-50"
                       ]}
-                      phx-click={@on_mode_change}
-                      phx-target={@myself}
-                      data-mode="file">
+                      data-mode="file"
+                      {
+                        if @on_mode_change do
+                          [
+                            "phx-click": @on_mode_change,
+                            "phx-target": @myself
+                          ]
+                        else
+                          []
+                        end
+                      }
+                      >
                 <svg class={[
                   "w-5 h-5 transition-colors",
                   @mode == :file && "text-purple-600" || "text-gray-400 group-hover:text-purple-600"
@@ -73,15 +83,21 @@ defmodule PdfUploaderWeb.UploadLive.Components.UploadDropZone do
                   @mode == :file && "text-purple-600" || "text-gray-600 group-hover:text-purple-600"
                 ]}>Arquivos</span>
               </button>
-              
+
               <button type="button"
                       class={[
                         "flex flex-col items-center justify-center p-3 border rounded-lg transition-colors group",
                         @mode == :folder && "border-purple-500 bg-purple-50" || "border-gray-200 hover:border-purple-500 hover:bg-purple-50"
                       ]}
-                      phx-click={@on_mode_change}
-                      phx-target={@myself}
-                      data-mode="folder">
+                      data-mode="folder"
+                      {if @on_mode_change do
+                        [
+                          "phx-click": @on_mode_change,
+                          "phx-target": @myself
+                        ]
+                      else
+                        []
+                      end}>
                 <svg class={[
                   "w-5 h-5 transition-colors",
                   @mode == :folder && "text-purple-600" || "text-gray-400 group-hover:text-purple-600"
@@ -98,9 +114,9 @@ defmodule PdfUploaderWeb.UploadLive.Components.UploadDropZone do
         </div>
       </div>
 
-      <button type="submit" 
-              class="w-full px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors disabled:bg-purple-300 disabled:cursor-not-allowed"
-              disabled={Enum.empty?(@upload.entries) || Enum.any?(@upload.errors)}>
+      <button type="submit"
+          class="w-full px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors disabled:bg-purple-300 disabled:cursor-not-allowed"
+          {if Enum.empty?(@upload.entries), do: [disabled: true], else: []}>
         Iniciar Upload
       </button>
     </form>

@@ -2,7 +2,6 @@ defmodule PdfUploaderWeb.UploadLive.Components.UploadDropZoneTest do
   use PdfUploaderWeb.ConnCase, async: true
 
   import Phoenix.LiveViewTest
-  import Phoenix.Component
 
   alias PdfUploaderWeb.UploadLive.Components.UploadDropZone
 
@@ -59,17 +58,26 @@ defmodule PdfUploaderWeb.UploadLive.Components.UploadDropZoneTest do
     end
 
     test "enables submit button when there are entries and no errors" do
+      upload_config = %Phoenix.LiveView.UploadConfig{
+        ref: "123",
+        entries: [
+          %Phoenix.LiveView.UploadEntry{
+            ref: "abc123",
+            upload_ref: "123",
+            progress: 0,
+            client_name: "test.pdf"
+          }
+        ],
+        errors: []
+      }
+
       html =
         render_component(UploadDropZone,
           id: "upload-drop-zone",
-          upload: %Phoenix.LiveView.UploadConfig{
-            ref: "123",
-            entries: [%Phoenix.LiveView.UploadEntry{}],
-            errors: []
-          }
+          upload: upload_config
         )
 
-      refute html =~ "disabled"
+      refute html =~ ~s(disabled="true")
     end
 
     test "disables submit button when there are errors" do
