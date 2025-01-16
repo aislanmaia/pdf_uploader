@@ -8,7 +8,7 @@ defmodule PdfUploaderWeb.UploadLive.Components.UploadDropZone do
 
     * `id` - Required. The component ID.
     * `upload` - Required. The LiveView upload struct.
-    * `mode` - Optional atom. Either :file or :folder. Defaults to :file.
+    * `mode` - Optional atom. Either :single or :folder. Defaults to :single.
     * `on_mode_change` - Optional function to be called when mode is changed.
     * `class` - Optional string of additional CSS classes.
 
@@ -30,7 +30,7 @@ defmodule PdfUploaderWeb.UploadLive.Components.UploadDropZone do
     {:ok,
      socket
      |> assign(assigns)
-     |> assign_new(:mode, fn -> :file end)
+     |> assign_new(:mode, fn -> :single end)
      |> assign_new(:class, fn -> nil end)
      |> assign_new(:on_mode_change, fn -> nil end)}
   end
@@ -58,29 +58,20 @@ defmodule PdfUploaderWeb.UploadLive.Components.UploadDropZone do
               <button type="button"
                       class={[
                         "flex flex-col items-center justify-center p-3 border rounded-lg transition-colors group",
-                        @mode == :file && "border-purple-500 bg-purple-50" || "border-gray-200 hover:border-purple-500 hover:bg-purple-50"
+                        @mode == :single && "border-purple-500 bg-purple-50" || "border-gray-200 hover:border-purple-500 hover:bg-purple-50"
                       ]}
-                      data-mode="file"
-                      {
-                        if @on_mode_change do
-                          [
-                            "phx-click": @on_mode_change,
-                            "phx-target": @myself
-                          ]
-                        else
-                          []
-                        end
-                      }
-                      >
+                      phx-click={@on_mode_change}
+                      phx-value-mode="single"
+                      phx-target={@myself}>
                 <svg class={[
                   "w-5 h-5 transition-colors",
-                  @mode == :file && "text-purple-600" || "text-gray-400 group-hover:text-purple-600"
+                  @mode == :single && "text-purple-600" || "text-gray-400 group-hover:text-purple-600"
                 ]} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
                 <span class={[
                   "text-xs font-medium mt-2 transition-colors",
-                  @mode == :file && "text-purple-600" || "text-gray-600 group-hover:text-purple-600"
+                  @mode == :single && "text-purple-600" || "text-gray-600 group-hover:text-purple-600"
                 ]}>Arquivos</span>
               </button>
 
@@ -89,15 +80,9 @@ defmodule PdfUploaderWeb.UploadLive.Components.UploadDropZone do
                         "flex flex-col items-center justify-center p-3 border rounded-lg transition-colors group",
                         @mode == :folder && "border-purple-500 bg-purple-50" || "border-gray-200 hover:border-purple-500 hover:bg-purple-50"
                       ]}
-                      data-mode="folder"
-                      {if @on_mode_change do
-                        [
-                          "phx-click": @on_mode_change,
-                          "phx-target": @myself
-                        ]
-                      else
-                        []
-                      end}>
+                      phx-click={@on_mode_change}
+                      phx-value-mode="folder"
+                      phx-target={@myself}>
                 <svg class={[
                   "w-5 h-5 transition-colors",
                   @mode == :folder && "text-purple-600" || "text-gray-400 group-hover:text-purple-600"

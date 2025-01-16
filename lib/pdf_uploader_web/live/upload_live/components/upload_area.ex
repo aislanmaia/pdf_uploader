@@ -34,7 +34,7 @@ defmodule PdfUploaderWeb.UploadLive.Components.UploadArea do
     ]}>
       <div class="flex items-center justify-between">
         <h2 class="text-lg font-semibold text-gray-900"><%= @title %></h2>
-        <button type="button" 
+        <button type="button"
                 class="text-sm text-red-600 hover:text-red-700 disabled:text-red-300"
                 phx-click={@on_clear}
                 disabled={!@can_clear}>

@@ -1,20 +1,22 @@
 defmodule PdfUploaderWeb.UploadLive do
   use PdfUploaderWeb, :live_view
 
+  import PdfUploaderWeb.UploadLive.Components.UploadArea
+
   @upload_dir "priv/static/uploads"
 
   def mount(_params, _session, socket) do
     {:ok,
      socket
      |> assign(:uploaded_files, [])
-     |> assign(:folder_mode, false)
+     |> assign(:mode, :single)
      |> assign(:show_files_panel, false)
      |> allow_upload(:pdf_files, accept: ~w(.pdf), max_entries: 100, max_file_size: 10_000_000)}
   end
 
-  def handle_event("switch-mode", _params, socket) do
-    # Send event back to the hook
-    {:noreply, push_event(socket, "switch-mode", %{})}
+  def handle_event("switch-mode", %{"mode" => mode}, socket) do
+    mode = String.to_existing_atom(mode)
+    {:noreply, assign(socket, :mode, mode)}
   end
 
   def handle_event("validate", _params, socket) do
@@ -103,7 +105,11 @@ defmodule PdfUploaderWeb.UploadLive do
     {:noreply, socket}
   end
 
-  defp error_to_string(:too_large), do: "File too large. Maximum size is 10MB"
-  defp error_to_string(:too_many_files), do: "You can upload a maximum of 5 files at a time"
-  defp error_to_string(:not_accepted), do: "File type not allowed. Only PDFs are accepted"
+  def handle_info({:mode_changed, mode}, socket) do
+    {:noreply, assign(socket, :mode, mode)}
+  end
+
+  defp error_to_string(:too_large), do: "File is too large"
+  defp error_to_string(:too_many_files), do: "Too many files"
+  defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"
 end
