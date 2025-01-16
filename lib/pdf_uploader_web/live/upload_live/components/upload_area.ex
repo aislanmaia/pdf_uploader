@@ -6,6 +6,7 @@ defmodule PdfUploaderWeb.UploadLive.Components.UploadArea do
 
   ## Props
 
+    * `id` - Required string identifier for the component
     * `class` - Optional string of additional CSS classes.
     * `title` - Optional string for the area title. Defaults to "Upload de PDFs".
     * `can_clear` - Optional boolean to determine if clear button should be enabled. Defaults to false.
@@ -18,6 +19,7 @@ defmodule PdfUploaderWeb.UploadLive.Components.UploadArea do
         Content goes here...
       </.upload_area>
   """
+  attr :id, :string, required: true
   attr :class, :string, default: nil
   attr :title, :string, default: "Upload de PDFs"
   attr :can_clear, :boolean, default: false

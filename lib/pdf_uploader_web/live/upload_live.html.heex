@@ -132,15 +132,17 @@
       </div>
     </div>
   </div>
-
-  <!-- Área Principal -->
+  
+<!-- Área Principal -->
   <div class="flex-1 bg-gray-50 p-6">
     <div class="flex items-center justify-between mb-6">
       <h1 class="text-xl font-semibold text-gray-900">Dados Calculados</h1>
-      <button type="button"
-              class="px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors disabled:bg-purple-300 disabled:cursor-not-allowed"
-              disabled={Enum.empty?(@uploaded_files)}
-              phx-click="calculate-data">
+      <button
+        type="button"
+        class="px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors disabled:bg-purple-300 disabled:cursor-not-allowed"
+        disabled={Enum.empty?(@uploaded_files)}
+        phx-click="calculate-data"
+      >
         Processar Dados
       </button>
     </div>
@@ -150,9 +152,15 @@
         <table class="w-full">
           <thead>
             <tr class="border-b border-gray-200 bg-gray-50">
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome do Arquivo</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total de Páginas</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tamanho</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Nome do Arquivo
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Total de Páginas
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Tamanho
+              </th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-200">
@@ -168,35 +176,42 @@
         </table>
       </div>
     </div>
-
-    <!-- Botão para expandir lista de arquivos (visível apenas quando houver muitos arquivos) -->
-    <button type="button"
-            class={[
-              "fixed bottom-6 right-6 p-3 bg-purple-600 text-white rounded-full shadow-lg hover:bg-purple-700 transition-colors",
-              "flex items-center gap-2",
-              if(length(@uploaded_files) + length(@uploads.pdf_files.entries) > 10, do: "", else: "hidden")
-            ]}
-            phx-click="toggle-files-panel">
+    
+<!-- Botão para expandir lista de arquivos (visível apenas quando houver muitos arquivos) -->
+    <button
+      type="button"
+      class={[
+        "fixed bottom-6 right-6 p-3 bg-purple-600 text-white rounded-full shadow-lg hover:bg-purple-700 transition-colors",
+        "flex items-center gap-2",
+        if(length(@uploaded_files) + length(@uploads.pdf_files.entries) > 10,
+          do: "",
+          else: "hidden"
+        )
+      ]}
+      phx-click="toggle-files-panel"
+    >
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
       </svg>
       <span class="text-sm font-medium">Ver Todos</span>
     </button>
-
-    <!-- Painel expansível de arquivos -->
+    
+<!-- Painel expansível de arquivos -->
     <div class={[
       "fixed inset-y-0 right-0 w-96 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50",
-      @show_files_panel && "translate-x-0" || "translate-x-full"
+      (@show_files_panel && "translate-x-0") || "translate-x-full"
     ]}>
       <!-- Conteúdo do painel expansível será implementado conforme necessário -->
     </div>
-
-    <!-- Overlay de fundo para o painel expansível -->
-    <div class={[
-      "fixed inset-0 bg-black/20 transition-opacity duration-300",
-      @show_files_panel && "opacity-100" || "opacity-0 pointer-events-none"
-    ]} phx-click="toggle-files-panel">
+    
+<!-- Overlay de fundo para o painel expansível -->
+    <div
+      class={[
+        "fixed inset-0 bg-black/20 transition-opacity duration-300",
+        (@show_files_panel && "opacity-100") || "opacity-0 pointer-events-none"
+      ]}
+      phx-click="toggle-files-panel"
+    >
     </div>
-
   </div>
 </div>

@@ -65,7 +65,8 @@ defmodule PdfUploaderWeb.UploadLive.Components.UploadDropZoneTest do
             ref: "abc123",
             upload_ref: "123",
             progress: 0,
-            client_name: "test.pdf"
+            client_name: "test.pdf",
+            valid?: true
           }
         ],
         errors: []
@@ -80,18 +81,21 @@ defmodule PdfUploaderWeb.UploadLive.Components.UploadDropZoneTest do
       refute html =~ ~s(disabled="true")
     end
 
-    test "disables submit button when there are errors" do
+    test "disables submit button when entries are empty" do
+      upload_config = %Phoenix.LiveView.UploadConfig{
+        ref: "123",
+        entries: [],
+        errors: []
+      }
+
       html =
         render_component(UploadDropZone,
           id: "upload-drop-zone",
-          upload: %Phoenix.LiveView.UploadConfig{
-            ref: "123",
-            entries: [%Phoenix.LiveView.UploadEntry{}],
-            errors: [error: "some error"]
-          }
+          upload: upload_config
         )
 
-      assert html =~ "disabled"
+      assert html =~ ~s(disabled="disabled")
+      assert html =~ "Iniciar Upload"
     end
   end
 end

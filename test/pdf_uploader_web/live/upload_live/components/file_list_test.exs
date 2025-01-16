@@ -86,7 +86,8 @@ defmodule PdfUploaderWeb.UploadLive.Components.FileListTest do
           },
           uploaded_files: [
             %{name: "completed.pdf", timestamp: now}
-          ]
+          ],
+          on_cancel_upload: fn _ref -> :ok end
         )
 
       assert html =~ "uploading.pdf"
