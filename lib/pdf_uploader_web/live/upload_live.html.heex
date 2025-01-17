@@ -1,5 +1,6 @@
 <div class="flex h-[calc(100vh-theme(spacing.64))]">
   <.upload_area
+    id="upload_area"
     title="Upload de PDFs"
     can_clear={not (Enum.empty?(@uploaded_files) and Enum.empty?(@uploads.pdf_files.errors) and Enum.empty?(@uploads.pdf_files.entries))}
     on_clear="clear-uploads"
