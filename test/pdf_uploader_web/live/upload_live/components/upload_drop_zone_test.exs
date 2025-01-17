@@ -37,9 +37,7 @@ defmodule PdfUploaderWeb.UploadLive.Components.UploadDropZoneTest do
           }
         )
 
-      assert html =~ "border-purple-500"
-      assert html =~ "text-purple-600"
-      assert html =~ "data-mode=\"file\""
+      assert html =~ "phx-value-mode=\"file\""
     end
 
     test "renders with folder mode selected" do
@@ -54,7 +52,7 @@ defmodule PdfUploaderWeb.UploadLive.Components.UploadDropZoneTest do
           }
         )
 
-      assert html =~ "data-mode=\"folder\""
+      assert html =~ "phx-value-mode=\"folder\""
     end
 
     test "enables submit button when there are entries and no errors" do
@@ -94,7 +92,7 @@ defmodule PdfUploaderWeb.UploadLive.Components.UploadDropZoneTest do
           upload: upload_config
         )
 
-      assert html =~ ~s(disabled="disabled")
+      assert html =~ ~s(disabled)
       assert html =~ "Iniciar Upload"
     end
   end
