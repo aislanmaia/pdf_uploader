@@ -106,7 +106,10 @@ defmodule PdfUploaderWeb.UploadLive do
   end
 
   def handle_info({:mode_changed, mode}, socket) do
-    {:noreply, assign(socket, :mode, mode)}
+    {:noreply,
+     socket
+     |> assign(:mode, mode)
+     |> push_event("switch-mode", %{mode: mode})}
   end
 
   defp error_to_string(:too_large), do: "File is too large"

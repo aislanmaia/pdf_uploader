@@ -37,7 +37,7 @@ defmodule PdfUploaderWeb.UploadLive.Components.UploadDropZoneTest do
           }
         )
 
-      assert html =~ "phx-value-mode=\"file\""
+      assert html =~ "data-mode=\"file\""
     end
 
     test "renders with folder mode selected" do
@@ -52,7 +52,7 @@ defmodule PdfUploaderWeb.UploadLive.Components.UploadDropZoneTest do
           }
         )
 
-      assert html =~ "phx-value-mode=\"folder\""
+      assert html =~ "data-mode=\"folder\""
     end
 
     test "enables submit button when there are entries and no errors" do

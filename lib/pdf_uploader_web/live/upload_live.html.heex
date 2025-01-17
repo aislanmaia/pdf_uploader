@@ -1,11 +1,14 @@
-<div class="flex h-[calc(100vh-theme(spacing.64))]">
+<div class="flex h-[calc(100vh-theme(spacing.20))]">
   <.upload_area
     id="upload_area"
     title="Upload de PDFs"
-    can_clear={not (Enum.empty?(@uploaded_files) and Enum.empty?(@uploads.pdf_files.errors) and Enum.empty?(@uploads.pdf_files.entries))}
+    can_clear={
+      not (Enum.empty?(@uploaded_files) and Enum.empty?(@uploads.pdf_files.errors) and
+             Enum.empty?(@uploads.pdf_files.entries))
+    }
     on_clear="clear-uploads"
-    class="w-[400px]">
-
+    class="w-[400px]"
+  >
     <.live_component
       module={PdfUploaderWeb.UploadLive.Components.UploadDropZone}
       id="upload-drop-zone"
@@ -22,19 +25,25 @@
       on_cancel_upload="cancel-upload"
     />
   </.upload_area>
-
-  <!-- Área Principal -->
+  
+<!-- Área Principal -->
   <div class="flex-1 bg-gray-50 p-6">
     <div class="flex items-center justify-between mb-6">
       <h1 class="text-xl font-semibold text-gray-900">Dados Calculados</h1>
       <button
         type="button"
         class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-        phx-click="toggle-files-panel">
+        phx-click="toggle-files-panel"
+      >
         <svg class="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"
+          />
         </svg>
-        <%= if @show_files_panel, do: "Esconder", else: "Mostrar" %> Arquivos
+        {if @show_files_panel, do: "Esconder", else: "Mostrar"} Arquivos
       </button>
     </div>
 
@@ -46,19 +55,23 @@
         <dl class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <div class="px-4 py-5 bg-gray-50 rounded-lg overflow-hidden sm:p-6">
             <dt class="text-sm font-medium text-gray-500 truncate">Total de Arquivos</dt>
-            <dd class="mt-1 text-3xl font-semibold text-gray-900"><%= length(@uploaded_files) %></dd>
+            <dd class="mt-1 text-3xl font-semibold text-gray-900">{length(@uploaded_files)}</dd>
           </div>
           <div class="px-4 py-5 bg-gray-50 rounded-lg overflow-hidden sm:p-6">
             <dt class="text-sm font-medium text-gray-500 truncate">Em Processamento</dt>
-            <dd class="mt-1 text-3xl font-semibold text-gray-900"><%= length(@uploads.pdf_files.entries) %></dd>
+            <dd class="mt-1 text-3xl font-semibold text-gray-900">
+              {length(@uploads.pdf_files.entries)}
+            </dd>
           </div>
           <div class="px-4 py-5 bg-gray-50 rounded-lg overflow-hidden sm:p-6">
             <dt class="text-sm font-medium text-gray-500 truncate">Processados</dt>
-            <dd class="mt-1 text-3xl font-semibold text-gray-900"><%= length(@uploaded_files) %></dd>
+            <dd class="mt-1 text-3xl font-semibold text-gray-900">{length(@uploaded_files)}</dd>
           </div>
           <div class="px-4 py-5 bg-gray-50 rounded-lg overflow-hidden sm:p-6">
             <dt class="text-sm font-medium text-gray-500 truncate">Com Erro</dt>
-            <dd class="mt-1 text-3xl font-semibold text-gray-900"><%= length(@uploads.pdf_files.errors) %></dd>
+            <dd class="mt-1 text-3xl font-semibold text-gray-900">
+              {length(@uploads.pdf_files.errors)}
+            </dd>
           </div>
         </dl>
       </div>
@@ -71,27 +84,51 @@
       <div class="p-6">
         <%= if Enum.empty?(@uploaded_files) do %>
           <div class="text-center py-12">
-            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+            <svg
+              class="mx-auto h-12 w-12 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"
+              />
             </svg>
             <h3 class="mt-2 text-sm font-medium text-gray-900">Nenhum arquivo processado</h3>
-            <p class="mt-1 text-sm text-gray-500">Faça upload de arquivos PDF para ver os resultados.</p>
+            <p class="mt-1 text-sm text-gray-500">
+              Faça upload de arquivos PDF para ver os resultados.
+            </p>
           </div>
         <% else %>
           <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
               <thead>
                 <tr>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Nome do Arquivo
                   </th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Status
                   </th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Tamanho
                   </th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Data
                   </th>
                 </tr>
@@ -100,18 +137,18 @@
                 <%= for file <- @uploaded_files do %>
                   <tr>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      <%= file.name %>
+                      {file.name}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                       <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                        <%= file.status %>
+                        {file.status}
                       </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <%= Number.Delimit.number_to_delimited(file.size, precision: 0) %> bytes
+                      {Number.Delimit.number_to_delimited(file.size, precision: 0)} bytes
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <%= Calendar.strftime(file.timestamp, "%d/%m/%Y %H:%M") %>
+                      {Calendar.strftime(file.timestamp, "%d/%m/%Y %H:%M")}
                     </td>
                   </tr>
                 <% end %>
@@ -127,9 +164,18 @@
     <div class="w-96 border-l border-gray-200 bg-white p-6 overflow-y-auto">
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-lg font-medium text-gray-900">Arquivos</h2>
-        <button type="button" class="text-gray-400 hover:text-gray-500" phx-click="toggle-files-panel">
+        <button
+          type="button"
+          class="text-gray-400 hover:text-gray-500"
+          phx-click="toggle-files-panel"
+        >
           <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
       </div>
@@ -138,14 +184,23 @@
         <%= for file <- @uploaded_files do %>
           <div class="p-4 bg-gray-50 rounded-lg">
             <div class="flex items-start">
-              <svg class="w-6 h-6 text-purple-600 mt-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <path fill="currentColor" d="M8 16h8v2H8zm0-4h8v2H8zm6-10H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6z" />
+              <svg
+                class="w-6 h-6 text-purple-600 mt-1"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  fill="currentColor"
+                  d="M8 16h8v2H8zm0-4h8v2H8zm6-10H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6z"
+                />
               </svg>
               <div class="ml-3 flex-1 min-w-0">
-                <p class="text-sm font-medium text-gray-900 truncate"><%= file.name %></p>
+                <p class="text-sm font-medium text-gray-900 truncate">{file.name}</p>
                 <p class="mt-1 text-xs text-gray-500">
-                  <%= Number.Delimit.number_to_delimited(file.size, precision: 0) %> bytes •
-                  <%= Calendar.strftime(file.timestamp, "%d/%m/%Y %H:%M") %>
+                  {Number.Delimit.number_to_delimited(file.size, precision: 0)} bytes • {Calendar.strftime(
+                    file.timestamp,
+                    "%d/%m/%Y %H:%M"
+                  )}
                 </p>
               </div>
             </div>

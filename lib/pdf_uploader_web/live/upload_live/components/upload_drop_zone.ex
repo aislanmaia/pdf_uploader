@@ -74,7 +74,7 @@ defmodule PdfUploaderWeb.UploadLive.Components.UploadDropZone do
                     "border-gray-200 hover:border-purple-500 hover:bg-purple-50"
                 ]}
                 phx-click={@on_mode_change}
-                phx-value-mode="file"
+                data-mode="file"
                 phx-target={@myself}
               >
                 <svg
@@ -110,7 +110,7 @@ defmodule PdfUploaderWeb.UploadLive.Components.UploadDropZone do
                     "border-gray-200 hover:border-purple-500 hover:bg-purple-50"
                 ]}
                 phx-click={@on_mode_change}
-                phx-value-mode="folder"
+                data-mode="folder"
                 phx-target={@myself}
               >
                 <svg
@@ -154,7 +154,7 @@ defmodule PdfUploaderWeb.UploadLive.Components.UploadDropZone do
     """
   end
 
-  def handle_event("switch-mode", %{"mode" => mode}, socket) do
+  def handle_event("switch-mode", %{"value" => mode}, socket) do
     mode = String.to_existing_atom(mode)
     send(self(), {:mode_changed, mode})
     {:noreply, assign(socket, :mode, mode)}
