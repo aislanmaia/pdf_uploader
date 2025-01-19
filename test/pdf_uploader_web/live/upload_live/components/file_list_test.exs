@@ -2,7 +2,6 @@ defmodule PdfUploaderWeb.UploadLive.Components.FileListTest do
   use PdfUploaderWeb.ConnCase, async: true
 
   import Phoenix.LiveViewTest
-  import Phoenix.Component
 
   alias PdfUploaderWeb.UploadLive.Components.FileList
 
@@ -37,7 +36,8 @@ defmodule PdfUploaderWeb.UploadLive.Components.FileListTest do
             ],
             errors: []
           },
-          uploaded_files: []
+          uploaded_files: [],
+          on_cancel_upload: "cancel_upload"
         )
 
       assert html =~ "test.pdf"
@@ -87,7 +87,7 @@ defmodule PdfUploaderWeb.UploadLive.Components.FileListTest do
           uploaded_files: [
             %{name: "completed.pdf", timestamp: now}
           ],
-          on_cancel_upload: fn _ref -> :ok end
+          on_cancel_upload: "cancel_upload"
         )
 
       assert html =~ "uploading.pdf"

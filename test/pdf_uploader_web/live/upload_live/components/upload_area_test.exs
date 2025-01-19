@@ -42,7 +42,7 @@ defmodule PdfUploaderWeb.UploadLive.Components.UploadAreaTest do
         }]
       )
 
-    refute html =~ "disabled"
+    refute html =~ ~s(<button type="button" disabled)
     assert html =~ "Limpar Tudo"
   end
 
