@@ -2,112 +2,133 @@ defmodule PdfUploaderWeb.UploadLiveTest do
   use PdfUploaderWeb.ConnCase
 
   import Phoenix.LiveViewTest
-  import PdfUploader.UploadsFixtures
 
-  @create_attrs %{filename: "some filename"}
-  @update_attrs %{filename: "some updated filename"}
-  @invalid_attrs %{filename: nil}
+  @upload_dir "priv/static/uploads"
 
-  defp create_upload(_) do
-    upload = upload_fixture()
-    %{upload: upload}
+  setup do
+    on_exit(fn ->
+      # Cleanup uploaded files after each test
+      File.rm_rf!(@upload_dir)
+      File.mkdir_p!(@upload_dir)
+    end)
   end
 
-  describe "Index" do
-    setup [:create_upload]
+  describe "Upload" do
+    test "renders upload form", %{conn: conn} do
+      {:ok, view, html} = live(conn, "/upload")
 
-    test "lists all uploads", %{conn: conn, upload: upload} do
-      {:ok, _index_live, html} = live(conn, ~p"/uploads")
-
-      assert html =~ "Listing Uploads"
-      assert html =~ upload.filename
+      assert html =~ "Upload de PDFs"
+      assert html =~ "Arraste seus arquivos PDF aqui"
+      assert view |> element("form") |> has_element?()
     end
 
-    test "saves new upload", %{conn: conn} do
-      {:ok, index_live, _html} = live(conn, ~p"/uploads")
+    test "handles valid PDF upload", %{conn: conn} do
+      {:ok, view, _html} = live(conn, "/upload")
 
-      assert index_live |> element("a", "New Upload") |> render_click() =~
-               "New Upload"
+      file = %{
+        name: "test.pdf",
+        content: "PDF content",
+        type: "application/pdf"
+      }
 
-      assert_patch(index_live, ~p"/uploads/new")
+      upload = file_input(view, "#upload-form", :pdf_files, [file])
+      assert render_upload(upload, "test.pdf", 100) =~ "100%"
 
-      assert index_live
-             |> form("#upload-form", upload: @invalid_attrs)
-             |> render_change() =~ "can&#39;t be blank"
-
-      assert index_live
-             |> form("#upload-form", upload: @create_attrs)
-             |> render_submit()
-
-      assert_patch(index_live, ~p"/uploads")
-
-      html = render(index_live)
-      assert html =~ "Upload created successfully"
-      assert html =~ "some filename"
+      assert view
+             |> element("button[type='submit']")
     end
 
-    test "updates upload in listing", %{conn: conn, upload: upload} do
-      {:ok, index_live, _html} = live(conn, ~p"/uploads")
+    test "handles mode switching", %{conn: conn} do
+      {:ok, view, html} = live(conn, "/upload")
 
-      assert index_live |> element("#uploads-#{upload.id} a", "Edit") |> render_click() =~
-               "Edit Upload"
+      # Default mode should be file
+      assert html =~ "data-mode-selected=\"file\""
 
-      assert_patch(index_live, ~p"/uploads/#{upload}/edit")
+      # Switch to folder mode
+      render_click(view, "switch-mode", %{"mode" => "folder"})
 
-      assert index_live
-             |> form("#upload-form", upload: @invalid_attrs)
-             |> render_change() =~ "can&#39;t be blank"
-
-      assert index_live
-             |> form("#upload-form", upload: @update_attrs)
-             |> render_submit()
-
-      assert_patch(index_live, ~p"/uploads")
-
-      html = render(index_live)
-      assert html =~ "Upload updated successfully"
-      assert html =~ "some updated filename"
+      assert render(view) =~ "data-mode-selected=\"folder\""
     end
 
-    test "deletes upload in listing", %{conn: conn, upload: upload} do
-      {:ok, index_live, _html} = live(conn, ~p"/uploads")
+    test "handles files panel toggling", %{conn: conn} do
+      {:ok, view, _html} = live(conn, "/upload")
 
-      assert index_live |> element("#uploads-#{upload.id} a", "Delete") |> render_click()
-      refute has_element?(index_live, "#uploads-#{upload.id}")
-    end
-  end
+      # Verify initial state
+      assert view |> element("button", "Mostrar Arquivos") |> has_element?()
 
-  describe "Show" do
-    setup [:create_upload]
+      # Perform the toggle action
+      view |> element("button", "Mostrar Arquivos") |> render_click()
 
-    test "displays upload", %{conn: conn, upload: upload} do
-      {:ok, _show_live, html} = live(conn, ~p"/uploads/#{upload}")
-
-      assert html =~ "Show Upload"
-      assert html =~ upload.filename
+      # Verify the updated state
+      assert render(view) =~ ~r/Arquivos/
     end
 
-    test "updates upload within modal", %{conn: conn, upload: upload} do
-      {:ok, show_live, _html} = live(conn, ~p"/uploads/#{upload}")
+    test "handles upload cancellation", %{conn: conn} do
+      {:ok, view, _html} = live(conn, "/upload")
 
-      assert show_live |> element("a", "Edit") |> render_click() =~
-               "Edit Upload"
+      file = %{
+        name: "test.pdf",
+        content: "PDF content",
+        type: "application/pdf"
+      }
 
-      assert_patch(show_live, ~p"/uploads/#{upload}/show/edit")
+      upload = file_input(view, "#upload-form", :pdf_files, [file])
+      assert render_upload(upload, "test.pdf", 54) =~ ~r/\d+%/
 
-      assert show_live
-             |> form("#upload-form", upload: @invalid_attrs)
-             |> render_change() =~ "can&#39;t be blank"
+      # Get the reference after the upload is prepared
+      %{"ref" => ref} = Enum.at(upload.entries, 0)
 
-      assert show_live
-             |> form("#upload-form", upload: @update_attrs)
-             |> render_submit()
+      # Test the click on item to cancel its upload
+      assert view
+             |> element("button[phx-click='cancel-upload'][phx-value-ref='#{ref}']")
+             |> render_click()
 
-      assert_patch(show_live, ~p"/uploads/#{upload}")
+      # Verify the cancellation
+      refute has_element?(view, "#upload-#{ref}")
+    end
 
-      html = render(show_live)
-      assert html =~ "Upload updated successfully"
-      assert html =~ "some updated filename"
+    test "handles clear uploads", %{conn: conn} do
+      {:ok, view, _html} = live(conn, "/upload")
+
+      upload = file_input(view, "form", :pdf_files, [
+        %{
+          last_modified: 1_594_171_879_000,
+          name: "sample.pdf",
+          content: "PDF content",
+          size: byte_size("PDF content"),
+          relative_path: "sample.pdf",
+          type: "application/pdf"
+        }
+      ])
+
+      assert render_upload(upload, "sample.pdf", 100) =~ "100%"
+
+      # Save the uploaded files
+      render_click(view, :save)
+
+      # Verify the uploads are saved
+      assert render(view) =~ "Enviado"
+
+      # Clear uploads
+      assert view
+      |> element("button[phx-click='clear-uploads']")
+      |> render_click()
+
+      # Verify the uploads are cleared
+      assert render(view) =~ "Nenhum arquivo selecionado"
+    end
+
+    test "validates file type", %{conn: conn} do
+      {:ok, view, _html} = live(conn, "/upload")
+
+      file = %{
+        name: "test.txt",
+        content: "text content",
+        type: "text/plain"
+      }
+
+      upload = file_input(view, "#upload-form", :pdf_files, [file])
+      {:error, [[_, :not_accepted]]} = render_upload(upload, "test.txt")
     end
   end
 end

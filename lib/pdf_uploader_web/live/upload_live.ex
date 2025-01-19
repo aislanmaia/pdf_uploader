@@ -9,7 +9,7 @@ defmodule PdfUploaderWeb.UploadLive do
     {:ok,
      socket
      |> assign(:uploaded_files, [])
-     |> assign(:mode, :single)
+     |> assign(:mode, :file)
      |> assign(:show_files_panel, false)
      |> allow_upload(:pdf_files, accept: ~w(.pdf), max_entries: 100, max_file_size: 10_000_000)}
   end
@@ -110,6 +110,13 @@ defmodule PdfUploaderWeb.UploadLive do
      socket
      |> assign(:mode, mode)
      |> push_event("switch-mode", %{mode: mode})}
+  end
+
+  def handle_info({:cancel_upload, ref}, socket) do
+    {:noreply,
+     socket
+     |> cancel_upload(:pdf_files, ref)
+     |> assign(:uploaded_files, [])}
   end
 
   defp error_to_string(:too_large), do: "File is too large"

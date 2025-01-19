@@ -65,7 +65,7 @@ defmodule PdfUploaderWeb.UploadLive.Components.UploadDropZone do
 
           <div class="w-full">
             <.live_file_input upload={@upload} class="hidden" />
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-2 gap-3" data-mode-selected={@mode}>
               <button
                 type="button"
                 class={[
